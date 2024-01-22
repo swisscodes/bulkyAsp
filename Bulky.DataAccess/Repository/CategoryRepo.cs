@@ -10,6 +10,6 @@ public class CategoryRepo(AppDbContext db) : Repository<Category>(db), ICategory
 
     public void Update(Category obj)
     {
-        db.Categories.Update(obj);
+        dbSet.Update(obj);
     }
 }
