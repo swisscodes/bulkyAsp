@@ -1,16 +1,17 @@
-﻿using BulkyMvcDotNet.Data;
-using BulkyMvcDotNet.Models;
+﻿using Bulky.DataAccess.Data;
+using Bulky.DataAccess.Repository.IRepository;
+using Bulky.Models.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BulkyMvcDotNet.Controllers;
 
-public class CategoryController(AppDbContext db) : Controller
+public class CategoryController(IUnitOfWork unitOfWork) : Controller
 {
     public IActionResult Index()
     {
-        List<Category> objCagoryList = db.Categories.ToList();
+        List<Category> objCategoryList = unitOfWork.Category.GetAll().ToList();
         // we can also use collection expressions List<Category> objCagoryList = [.. db.Categories];
-        return View(objCagoryList);
+        return View(objCategoryList);
     }
 
     public IActionResult Create()
@@ -27,8 +28,8 @@ public class CategoryController(AppDbContext db) : Controller
         }
         if (ModelState.IsValid)
         {
-            db.Categories.Add(formObj);
-            db.SaveChanges();
+            unitOfWork.Category.Add(formObj);
+            unitOfWork.Save();
             TempData["success"] = "Category created succesfully";
             return RedirectToAction("index", "Category");
         }
@@ -41,7 +42,7 @@ public class CategoryController(AppDbContext db) : Controller
         {
             return NotFound();
         }
-        Category? categoryFromDb = db.Categories.Find(id); // only works on primary key
+        Category? categoryFromDb = unitOfWork.Category.Get(u=>u.Id == id); // only works on primary key
         //categoryFromDb1 = db.Categories.FirstOrDefault(u => u.Id == id); // works on any field row of table, for learning Category
         //Category categoryFromDb2 = db.Categories.Where(u => u.Id == id)..FirstOrDefault(); // works on any field row of table, for learning Category
         if (categoryFromDb == null)
@@ -56,8 +57,8 @@ public class CategoryController(AppDbContext db) : Controller
        
         if (ModelState.IsValid)
         {
-            db.Categories.Update(formObj);
-            db.SaveChanges();
+            unitOfWork.Category.Update(formObj);
+            unitOfWork.Save();
             TempData["success"] = "Category edited succesfully";
             return RedirectToAction("index", "Category");
         }
@@ -70,7 +71,7 @@ public class CategoryController(AppDbContext db) : Controller
         {
             return NotFound();
         }
-        Category? categoryFromDb = db.Categories.Find(id); // only works on primary key
+        Category? categoryFromDb = unitOfWork.Category.Get(u=>u.Id == id); // only works on primary key
         //categoryFromDb1 = db.Categories.FirstOrDefault(u => u.Id == id); // works on any field row of table, for learning Category
         //Category categoryFromDb2 = db.Categories.Where(u => u.Id == id)..FirstOrDefault(); // works on any field row of table, for learning Category
         if (categoryFromDb == null)
@@ -85,11 +86,11 @@ public class CategoryController(AppDbContext db) : Controller
 
         if (ModelState.IsValid)
         {
-            Category? obj = db.Categories.Find(id);
+            Category? obj = unitOfWork.Category.Get(u=>u.Id == id);
             if (obj == null) return NotFound();
-            
-            db.Categories.Remove(obj);
-            db.SaveChanges();
+
+            unitOfWork.Category.Remove(obj);
+            unitOfWork.Save();
             TempData["success"] = "Category deleted succesfully";
             return RedirectToAction("index", "Category");
         }
